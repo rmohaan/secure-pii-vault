@@ -1,0 +1,15 @@
+# All placeholders are required. Use ADC / attached workload identity, never a JSON key file.
+spring:
+  datasource:
+    url: ${ALLOYDB_JDBC_URL}
+    username: ${ALLOYDB_DB_USER:investor_app}
+  flyway:
+    enabled: false # Use a separate migration job/identity, not the runtime account.
+vault:
+  field-key: ${KMS_FIELD_KEY}
+  archive-key: ${KMS_ARCHIVE_KEY}
+  hmac-version: ${KMS_HMAC_VERSION}
+gcp:
+  database-password-secret: ${DB_PASSWORD_SECRET_VERSION}
+  jwt-issuer: ${JWT_ISSUER}
+  jwt-audience: ${JWT_AUDIENCE}

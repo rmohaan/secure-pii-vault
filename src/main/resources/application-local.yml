@@ -1,0 +1,21 @@
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/investors}
+    username: investor_app
+    password: ${DB_APP_PASSWORD}
+  flyway:
+    enabled: true
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/investors}
+    user: investor_migrator
+    password: ${DB_MIGRATOR_PASSWORD}
+    default-schema: investor
+vault:
+  field-key: local-field-v1
+  archive-key: local-archive-v1
+  hmac-version: local-hmac-v1
+local:
+  field-key: ${LOCAL_FIELD_KEY}
+  archive-key: ${LOCAL_ARCHIVE_KEY}
+  hmac-key: ${LOCAL_HMAC_KEY}
+  writer-password: ${LOCAL_WRITER_PASSWORD}
+  reader-password: ${LOCAL_READER_PASSWORD}

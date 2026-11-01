@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: secure-pii-vault
+  datasource:
+    hikari:
+      maximum-pool-size: 10
+      connection-timeout: 5000
+  flyway:
+    enabled: false
+server:
+  error:
+    include-message: never
+    include-binding-errors: never
+    include-stacktrace: never
+  tomcat:
+    max-http-form-post-size: 16KB
+logging:
+  level:
+    org.springframework.jdbc: WARN
+    org.springframework.web: WARN

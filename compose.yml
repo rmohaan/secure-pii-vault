@@ -1,0 +1,39 @@
+services:
+  postgres:
+    image: postgres:17.6
+    environment:
+      POSTGRES_DB: investors
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_ADMIN_PASSWORD:?Run scripts/init-local.sh}
+      DB_APP_PASSWORD: ${DB_APP_PASSWORD:?Run scripts/init-local.sh}
+      DB_MIGRATOR_PASSWORD: ${DB_MIGRATOR_PASSWORD:?Run scripts/init-local.sh}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./infra/postgres/init.sh:/docker-entrypoint-initdb.d/10-roles.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d investors"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  app:
+    build: .
+    profiles: [app]
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+      DB_URL: jdbc:postgresql://postgres:5432/investors
+      DB_APP_PASSWORD: ${DB_APP_PASSWORD}
+      DB_MIGRATOR_PASSWORD: ${DB_MIGRATOR_PASSWORD}
+      LOCAL_FIELD_KEY: ${LOCAL_FIELD_KEY}
+      LOCAL_ARCHIVE_KEY: ${LOCAL_ARCHIVE_KEY}
+      LOCAL_HMAC_KEY: ${LOCAL_HMAC_KEY}
+      LOCAL_WRITER_PASSWORD: ${LOCAL_WRITER_PASSWORD}
+      LOCAL_READER_PASSWORD: ${LOCAL_READER_PASSWORD}
+    ports:
+      - "127.0.0.1:8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+volumes:
+  pgdata:
