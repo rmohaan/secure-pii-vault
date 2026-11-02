@@ -72,3 +72,11 @@ Tests cover randomized ciphertext, tamper/AAD rejection, HMAC domain separation,
 Start with [.env.gcp.example](.env.gcp.example) and [deployment instructions](docs/gcp.md). GCP mode uses ADC / workload identity, a pinned Secret Manager password version, an OIDC issuer and audience, and three application KMS resources. A fourth key protects the AlloyDB cluster. Apply migrations with a distinct deployment identity; runtime Flyway is disabled in GCP. Local mode runs migrations with a separate migration login.
 
 The project contains source/configuration only; it has not provisioned cloud resources or been validated against a real GCP project. See the production gaps and rotation procedures in the design before handling real personal data.
+
+## Shared DEKs and boot-time rewrap
+
+All PANs and other fields use **one shared AES-256 DEK**, with fresh random nonces for each encryption. The archive is the separate encrypted copy of each investor’s original input, encrypted fields and HMAC indexes in `pii_archive.investor_archive`. All archive records use a second shared DEK to preserve purpose separation. Only KMS-encrypted DEKs are stored in `investor.data_keys`; plaintext DEKs are loaded into memory during startup. Apply migration V2 before deploying (local Flyway does this automatically).
+
+After GCP rotates the KEK to a new primary version under the same key resource, restart with `UPDATE_DEK_ON_BOOT=true`. Startup atomically replaces the stored wrappers while preserving the DEKs and existing PAN ciphertext. Set it back to `false` afterward; leaving it enabled rewraps on every boot. The flag does not rotate KMS or schedule a restart. Startup fails if the keys cannot be loaded or rewrapped.
+
+Only the shared-DEK envelope format is supported; there is no per-value DEK encryption or compatibility reader. Preserve the key table in backups. Runtime now needs archive KMS decrypt permission in addition to encrypt. Shared DEKs increase compromise impact and require an aggregate AES-GCM nonce/usage budget. See [rotation and security caveats](docs/design.md#rotation-and-recovery) and the [GCP rollout runbook](docs/gcp.md#shared-dek-rollout-and-rotation).

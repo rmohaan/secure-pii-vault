@@ -22,6 +22,7 @@ services:
     profiles: [app]
     environment:
       SPRING_PROFILES_ACTIVE: local
+      UPDATE_DEK_ON_BOOT: ${UPDATE_DEK_ON_BOOT:false}
       DB_URL: jdbc:postgresql://postgres:5432/investors
       DB_APP_PASSWORD: ${DB_APP_PASSWORD}
       DB_MIGRATOR_PASSWORD: ${DB_MIGRATOR_PASSWORD}

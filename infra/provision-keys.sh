@@ -24,9 +24,9 @@ for key in field-kek archive-kek alloydb-cmek; do
 # documented in docs/design.md.
 gcloud kms keys create blind-index --project="$PROJECT_ID" --location="$REGION" --keyring="$KEY_RING" --purpose=mac --default-algorithm=hmac-sha256
 gcloud kms keys add-iam-policy-binding field-kek --project="$PROJECT_ID" --location="$REGION" --keyring="$KEY_RING" --member="serviceAccount:$RUNTIME_SERVICE_ACCOUNT" --role=roles/cloudkms.cryptoKeyEncrypterDecrypter
-gcloud kms keys add-iam-policy-binding archive-kek --project="$PROJECT_ID" --location="$REGION" --keyring="$KEY_RING" --member="serviceAccount:$RUNTIME_SERVICE_ACCOUNT" --role=roles/cloudkms.cryptoKeyEncrypter
+gcloud kms keys add-iam-policy-binding archive-kek --project="$PROJECT_ID" --location="$REGION" --keyring="$KEY_RING" --member="serviceAccount:$RUNTIME_SERVICE_ACCOUNT" --role=roles/cloudkms.cryptoKeyEncrypterDecrypter
 gcloud kms keys add-iam-policy-binding blind-index --project="$PROJECT_ID" --location="$REGION" --keyring="$KEY_RING" --member="serviceAccount:$RUNTIME_SERVICE_ACCOUNT" --role=roles/cloudkms.signerVerifier
 gcloud secrets add-iam-policy-binding "$DB_PASSWORD_SECRET_ID" --project="$PROJECT_ID" --member="serviceAccount:$RUNTIME_SERVICE_ACCOUNT" --role=roles/secretmanager.secretAccessor
 # For stricter IAM, replace signerVerifier with a custom role containing only cloudkms.cryptoKeyVersions.useToSign.
 # Grant the AlloyDB service agent encrypter/decrypter on alloydb-cmek separately, per docs/gcp.md.
-# Do not grant the runtime service account any role on alloydb-cmek or archive decrypt.
+# Shared archive DEK loading requires archive decrypt. Do not grant runtime access to alloydb-cmek.
